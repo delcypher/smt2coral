@@ -1,0 +1,6 @@
+coral.jar
+# Symlink to z3 python package
+z3
+smt2coral/__pycache__
+*.swp
+*.swo
