@@ -16,8 +16,8 @@ _logger = logging.getLogger(__name__)
 
 def main(args):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--query-file",
-        dest='query_file',
+    parser.add_argument("query_file",
+        nargs='?',
         type=argparse.FileType('r'),
         default=sys.stdin,
     )
