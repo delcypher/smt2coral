@@ -25,7 +25,7 @@ def main(args):
         type=argparse.FileType('w'),
         default=sys.stdout,
     )
-        
+
     DriverUtil.parserAddLoggerArg(parser)
 
     pargs = parser.parse_args(args)

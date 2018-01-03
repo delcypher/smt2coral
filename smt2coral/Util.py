@@ -40,3 +40,49 @@ def split_bool_and(constraint):
             work_list.appendleft(item.arg(i))
 
     return final_constraints
+
+class Z3ExprDispatcherException(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+class Z3ExprDispatcher:
+    def __init__(self, throw_except_on_no_override=True):
+        self.throw_except_on_no_override = throw_except_on_no_override
+        self._init_dispatcher()
+
+    def _init_dispatcher(self):
+        self._z3_app_dispatcher_map = dict()
+        # Map function application id to handler function
+
+        # Boolean constants
+        self._z3_app_dispatcher_map[z3.Z3_OP_TRUE] = self.visit_true
+        self._z3_app_dispatcher_map[z3.Z3_OP_FALSE] = self.visit_false
+
+    def default_handler(self, e):
+        msg = "No handler implemented for Z3 expr {}".format(
+            e.sexpr())
+        if self.throw_except_on_no_override:
+            raise NotImplementedError(msg)
+        else:
+            _logger.warning(msg)
+
+    def visit(self, e):
+        assert z3.is_ast(e)
+        if not z3.is_app(e):
+            raise Z3ExprDispatcherException('expr was not an application')
+
+        # Call the appropriate function application handler
+        app_kind = e.decl().kind()
+        try:
+            handler = self._z3_app_dispatcher_map[app_kind]
+            handler(e)
+        except KeyError as e:
+            msg ='Handler for {} is missing from dispatch dictionary'.format(app_kind)
+            raise NotImplementedError(msg)
+
+    # Visitors
+    def visit_true(self, e):
+        self.default_handler(e)
+
+    def visit_false(self, e):
+        self.default_handler(e)

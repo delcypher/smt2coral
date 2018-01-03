@@ -2,6 +2,7 @@
 import io
 import logging
 import z3
+from . import Util
 
 _logger = logging.getLogger(__name__)
 
@@ -9,16 +10,18 @@ class CoralPrinterException(Exception):
     def __init__(self, msg):
         self.msg = msg
 
-class CoralPrinter:
+class CoralPrinter(Util.Z3ExprDispatcher):
     def __init__(self):
+        super().__init__()
         self.sio = io.StringIO('')
-    
+
     def print_constraints(self, constraints):
         assert isinstance(constraints, list)
         sio = io.StringIO('')
-        for constraint in constraints:
+        for index, constraint in enumerate(constraints):
             self.print_constraint(constraint)
-            self.sio.write(';')
+            if index < (len(constraints) -1):
+                self.sio.write(';')
         final_str = self.sio.getvalue()
         return final_str
 
@@ -27,6 +30,12 @@ class CoralPrinter:
         self.sio = io.StringIO('')
 
     def print_constraint(self, constraint):
-        # TODO
-        self.sio.write('')
+        self.visit(constraint)
+
+    # Visitors
+    def visit_true(self, e):
+        self.sio.write('BCONST(TRUE)')
+
+    def visit_false(self, e):
+        self.sio.write('BCONST(FALSE)')
 
