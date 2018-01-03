@@ -62,7 +62,7 @@ class Z3ExprDispatcher:
         # Boolean operations
         self._z3_app_dispatcher_map[z3.Z3_OP_AND] = self.visit_and
         self._z3_app_dispatcher_map[z3.Z3_OP_OR] = self.visit_or
-
+        self._z3_app_dispatcher_map[z3.Z3_OP_XOR] = self.visit_xor
 
     def default_handler(self, e):
         msg = "No handler implemented for Z3 expr {}".format(
@@ -109,5 +109,9 @@ class Z3ExprDispatcher:
         self.default_handler(e)
 
     def visit_or(self, e):
+        assert e.get_num_args() == 2
+        self.default_handler(e)
+
+    def visit_xor(self, e):
         assert e.get_num_args() == 2
         self.default_handler(e)

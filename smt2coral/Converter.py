@@ -96,3 +96,6 @@ class CoralPrinter(Util.Z3ExprDispatcher):
 
     def visit_or(self, e):
         self._visit_binary_op(e, 'BOR')
+
+    def visit_xor(self, e):
+        self._visit_binary_op(e, 'BXOR')
