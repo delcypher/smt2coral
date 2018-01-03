@@ -57,6 +57,7 @@ class Z3ExprDispatcher:
         # Boolean constants
         self._z3_app_dispatcher_map[z3.Z3_OP_TRUE] = self.visit_true
         self._z3_app_dispatcher_map[z3.Z3_OP_FALSE] = self.visit_false
+        self._z3_app_dispatcher_map[z3.Z3_OP_UNINTERPRETED] = self.visit_uninterpreted_function
 
     def default_handler(self, e):
         msg = "No handler implemented for Z3 expr {}".format(
@@ -73,6 +74,11 @@ class Z3ExprDispatcher:
 
         # Call the appropriate function application handler
         app_kind = e.decl().kind()
+
+        if app_kind == z3.Z3_OP_UNINTERPRETED and e.num_args() == 0:
+            self.visit_variable(e)
+            return
+
         try:
             handler = self._z3_app_dispatcher_map[app_kind]
             handler(e)
@@ -85,4 +91,10 @@ class Z3ExprDispatcher:
         self.default_handler(e)
 
     def visit_false(self, e):
+        self.default_handler(e)
+
+    def visit_variable(self, e):
+        self.default_handler(e)
+
+    def visit_uninterpreted_function(self, e):
         self.default_handler(e)
