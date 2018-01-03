@@ -118,7 +118,10 @@ def parse_coral_output(stdout, dump_output):
         line_to_parse = l
         break
 
-    assert line_to_parse is not None
+    if line_to_parse is None:
+        _logger.error('Failed to find required output line')
+        return None
+
     _logger.debug('Line to parse is \"{}\"'.format(line_to_parse))
     if line_to_parse.startswith('SOLVED'):
         # Satisfiable
