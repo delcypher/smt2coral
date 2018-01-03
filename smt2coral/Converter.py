@@ -83,3 +83,16 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         else:
             raise CoralPrinterException('Unsupported sort: {}'.format(sort))
 
+    def _visit_binary_op(self, e, name):
+        assert e.num_args() == 2
+        self.sio.write(name + '(')
+        self.visit(e.arg(0))
+        self.sio.write(',')
+        self.visit(e.arg(1))
+        self.sio.write(')')
+
+    def visit_and(self, e):
+        self._visit_binary_op(e, 'BAND')
+
+    def visit_or(self, e):
+        self._visit_binary_op(e, 'BOR')
