@@ -128,6 +128,7 @@ def parse_coral_output(stdout, dump_output):
         return None
     else:
         # Unknown
+        _logger.error('Unrecognised response from coral: \"{}\"'.format(line_to_parse))
         return None
     return None
 
