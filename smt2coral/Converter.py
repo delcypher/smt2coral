@@ -137,14 +137,20 @@ class CoralPrinter(Util.Z3ExprDispatcher):
     def visit_not(self, e):
         self._visit_unary_op(e, 'BNOT')
 
-    def visit_float_eq(self, e):
+    def _visit_binary_float_op(self, e, float32_name, float64_name):
         assert e.num_args() == 2
         self._check_fp_sort(e.arg(0))
         arg_sort = e.arg(0).sort()
         if self._is_float32_sort(arg_sort):
-            self._visit_binary_op(e, 'FEQ')
+            self._visit_binary_op(e, float32_name)
         elif self._is_float64_sort(arg_sort):
-            self._visit_binary_op(e, 'DEQ')
+            self._visit_binary_op(e, float64_name)
         else:
-            raise CoralPrinterException('Unhandled float eq case')
+            raise CoralPrinterException('Unhandled binary float op case')
+
+    def visit_float_eq(self, e):
+        self._visit_binary_float_op(e, 'FEQ', 'DEQ')
+
+    def visit_float_leq(self, e):
+        self._visit_binary_float_op(e, 'FLE', 'DLE')
 
