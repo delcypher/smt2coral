@@ -139,6 +139,7 @@ class CoralPrinter(Util.Z3ExprDispatcher):
 
     def visit_float_eq(self, e):
         assert e.num_args() == 2
+        self._check_fp_sort(e.arg(0))
         arg_sort = e.arg(0).sort()
         if self._is_float32_sort(arg_sort):
             self._visit_binary_op(e, 'FEQ')
