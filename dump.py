@@ -35,6 +35,7 @@ def main(args):
     constraint, err = Util.parse(pargs.query_file)
     if err is not None:
         # Parser failure
+        _logger.error('Parser failure: {}'.format(err))
         return 1
     constraints = Util.split_bool_and(constraint)
 
