@@ -91,6 +91,12 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         self.visit(e.arg(1))
         self.sio.write(')')
 
+    def _visit_unary_op(self, e, name):
+        assert e.num_args() == 1
+        self.sio.write(name + '(')
+        self.visit(e.arg(0))
+        self.sio.write(')')
+
     def visit_and(self, e):
         self._visit_binary_op(e, 'BAND')
 
@@ -99,3 +105,6 @@ class CoralPrinter(Util.Z3ExprDispatcher):
 
     def visit_xor(self, e):
         self._visit_binary_op(e, 'BXOR')
+
+    def visit_not(self, e):
+        self._visit_unary_op(e, 'BNOT')
