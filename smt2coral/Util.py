@@ -73,6 +73,7 @@ class Z3ExprDispatcher:
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_GT] = self.visit_float_gt
 
         # Float operators
+        self._z3_app_dispatcher_map[z3.Z3_OP_FPA_ABS] = self.visit_float_abs
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_NEG] = self.visit_float_neg
 
     def default_handler(self, e):
@@ -152,5 +153,9 @@ class Z3ExprDispatcher:
         self.default_handler(e)
 
     def visit_float_neg(self, e):
+        assert e.num_args() == 1
+        self.default_handler(e)
+
+    def visit_float_abs(self, e):
         assert e.num_args() == 1
         self.default_handler(e)

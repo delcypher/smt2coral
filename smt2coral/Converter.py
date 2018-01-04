@@ -10,6 +10,10 @@ class CoralPrinterException(Exception):
     def __init__(self, msg):
         self.msg = msg
 
+class CoralPrinterUnsupportedOperation(CoralPrinterException):
+    def __init__(self, msg):
+        self.msg = msg
+
 class CoralPrinter(Util.Z3ExprDispatcher):
     def __init__(self):
         super().__init__()
@@ -200,4 +204,8 @@ class CoralPrinter(Util.Z3ExprDispatcher):
             self.sio.write(')')
         else:
             raise CoralPrinterException('Unhandled fneg op case')
+
+    def visit_float_abs(self, e):
+        # FIXME: We need an ite expression to support this
+        raise CoralPrinterUnsupportedOperation('Unsupported operation fp.abs')
 
