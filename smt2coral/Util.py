@@ -72,6 +72,9 @@ class Z3ExprDispatcher:
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_GE] = self.visit_float_geq
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_GT] = self.visit_float_gt
 
+        # Float operators
+        self._z3_app_dispatcher_map[z3.Z3_OP_FPA_NEG] = self.visit_float_neg
+
     def default_handler(self, e):
         msg = "No handler implemented for Z3 expr {}".format(
             e.sexpr())
@@ -113,37 +116,41 @@ class Z3ExprDispatcher:
         self.default_handler(e)
 
     def visit_and(self, e):
-        assert e.get_num_args() == 2
+        assert e.num_args() == 2
         self.default_handler(e)
 
     def visit_or(self, e):
-        assert e.get_num_args() == 2
+        assert e.num_args() == 2
         self.default_handler(e)
 
     def visit_xor(self, e):
-        assert e.get_num_args() == 2
+        assert e.num_args() == 2
         self.default_handler(e)
 
     def visit_not(self, e):
-        assert e.get_num_args() == 1
+        assert e.num_args() == 1
         self.default_handler(e)
 
     def visit_float_eq(self, e):
-        assert e.get_num_args() == 2
+        assert e.num_args() == 2
         self.default_handler(e)
 
     def visit_float_leq(self, e):
-        assert e.get_num_args() == 2
+        assert e.num_args() == 2
         self.default_handler(e)
 
     def visit_float_lt(self, e):
-        assert e.get_num_args() == 2
+        assert e.num_args() == 2
         self.default_handler(e)
 
     def visit_float_geq(self, e):
-        assert e.get_num_args() == 2
+        assert e.num_args() == 2
         self.default_handler(e)
 
     def visit_float_gt(self, e):
-        assert e.get_num_args() == 2
+        assert e.num_args() == 2
+        self.default_handler(e)
+
+    def visit_float_neg(self, e):
+        assert e.num_args() == 1
         self.default_handler(e)

@@ -163,3 +163,41 @@ class CoralPrinter(Util.Z3ExprDispatcher):
     def visit_float_gt(self, e):
         self._visit_binary_float_op(e, 'FGT', 'DGT')
 
+    def visit_float_neg(self, e):
+        """
+            Coral doesn't have this operation so we have to do something
+            that is equivalent almost all the time
+
+            (declare-const a Float32)
+            (assert
+              (not
+                (=
+                  (fp.sub RNE (_ +zero 8 24) a)
+                  (fp.neg a)
+                )
+              )
+            )
+            (assert
+              (not (= a (_ +zero 8 24)))
+            )
+
+            The above is unsat, i.e. apart from +zero (which coral doesn't support anyway)
+            this transformation is sound.
+
+            FIXME: Can we do any better?
+        """
+        assert e.num_args() == 1
+        arg = e.arg(0)
+        self._check_fp_sort(arg)
+        arg_sort = e.arg(0).sort()
+        if self._is_float32_sort(arg_sort):
+            self.sio.write('SUB(FCONST(0.0),')
+            self.visit(arg)
+            self.sio.write(')')
+        elif self._is_float64_sort(arg_sort):
+            self.sio.write('SUB(DCONST(0.0),')
+            self.visit(arg)
+            self.sio.write(')')
+        else:
+            raise CoralPrinterException('Unhandled fneg op case')
+
