@@ -154,3 +154,6 @@ class CoralPrinter(Util.Z3ExprDispatcher):
     def visit_float_leq(self, e):
         self._visit_binary_float_op(e, 'FLE', 'DLE')
 
+    def visit_float_lt(self, e):
+        self._visit_binary_float_op(e, 'FLT', 'DLT')
+

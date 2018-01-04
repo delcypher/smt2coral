@@ -68,6 +68,7 @@ class Z3ExprDispatcher:
         # Float relations
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_EQ] = self.visit_float_eq
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_LE] = self.visit_float_leq
+        self._z3_app_dispatcher_map[z3.Z3_OP_FPA_LT] = self.visit_float_lt
 
     def default_handler(self, e):
         msg = "No handler implemented for Z3 expr {}".format(
@@ -130,5 +131,9 @@ class Z3ExprDispatcher:
         self.default_handler(e)
 
     def visit_float_leq(self, e):
+        assert e.get_num_args() == 2
+        self.default_handler(e)
+
+    def visit_float_lt(self, e):
         assert e.get_num_args() == 2
         self.default_handler(e)
