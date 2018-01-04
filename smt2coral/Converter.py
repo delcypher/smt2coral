@@ -142,8 +142,34 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         self._visit_unary_op(e, 'BNOT')
 
     def visit_eq(self, e):
-        # FIXME: Coral's constraint language doesn't support this
-        raise CoralPrinterUnsupportedOperation('Unsupported operation =')
+        sort = e.arg(0).sort()
+        if sort.kind() == z3.Z3_BOOL_SORT:
+            self.sio.write('BNOT(BXOR(')
+            self.visit(e.arg(0))
+            self.sio.write(',')
+            self.visit(e.arg(1))
+            self.sio.write('))')
+        elif sort.kind() == z3.Z3_BV_SORT:
+            self._check_bv_sort(e)
+            raise NotImplementedError('BitVector equal')
+        elif sort.kind() == z3.Z3_FLOATING_POINT_SORT:
+            self._check_fp_sort(e.arg(0))
+            # Either FEQ or both args are NaN
+            # FIXME: This isn't quite right because +zero is != to -zero
+            # but we have no way in Coral's constraint language of distinguishing
+            # between them
+            _logger.warning('Unsound conversion for = operation')
+            new_expr = z3.Or(
+                z3.And(
+                    z3.fpIsNaN(e.arg(0)),
+                    z3.fpIsNaN(e.arg(1))
+                ),
+                z3.fpEQ(e.arg(0), e.arg(1))
+            )
+            self.visit(new_expr)
+        else:
+            raise CoralPrinterException('Unsupported sort: {}'.format(sort))
+
 
     def _visit_binary_float_op(self, e, float32_name, float64_name):
         assert e.num_args() == 2
@@ -196,6 +222,7 @@ class CoralPrinter(Util.Z3ExprDispatcher):
 
             FIXME: Can we do any better?
         """
+        _logger.warning('Unsound translation for fp.neg')
         assert e.num_args() == 1
         arg = e.arg(0)
         self._check_fp_sort(arg)
@@ -215,3 +242,22 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         # FIXME: We need an ite expression to support this
         raise CoralPrinterUnsupportedOperation('Unsupported operation fp.abs')
 
+    def visit_float_is_nan(self, e):
+        arg = e.arg(0)
+        self._check_fp_sort(arg)
+        arg_sort = e.arg(0).sort()
+        # (fp.isNaN a) <==>  (not (fp.eq a a))
+        if self._is_float32_sort(arg_sort):
+            self.sio.write('FNE(')
+            self.visit(arg)
+            self.sio.write(',')
+            self.visit(arg)
+            self.sio.write(')')
+        elif self._is_float64_sort(arg_sort):
+            self.sio.write('DNE(')
+            self.visit(arg)
+            self.sio.write(',')
+            self.visit(arg)
+            self.sio.write(')')
+        else:
+            raise CoralPrinterException('Unhandled fneg op case')
