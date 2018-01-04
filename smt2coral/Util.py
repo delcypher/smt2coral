@@ -65,6 +65,9 @@ class Z3ExprDispatcher:
         self._z3_app_dispatcher_map[z3.Z3_OP_XOR] = self.visit_xor
         self._z3_app_dispatcher_map[z3.Z3_OP_NOT] = self.visit_not
 
+        # multi sort functions
+        self._z3_app_dispatcher_map[z3.Z3_OP_EQ] = self.visit_eq
+
         # Float relations
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_EQ] = self.visit_float_eq
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_LE] = self.visit_float_leq
@@ -130,6 +133,10 @@ class Z3ExprDispatcher:
 
     def visit_not(self, e):
         assert e.num_args() == 1
+        self.default_handler(e)
+
+    def visit_eq(self, e):
+        assert e.num_args() == 2
         self.default_handler(e)
 
     def visit_float_eq(self, e):

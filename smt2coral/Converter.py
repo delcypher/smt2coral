@@ -141,6 +141,10 @@ class CoralPrinter(Util.Z3ExprDispatcher):
     def visit_not(self, e):
         self._visit_unary_op(e, 'BNOT')
 
+    def visit_eq(self, e):
+        # FIXME: Coral's constraint language doesn't support this
+        raise CoralPrinterUnsupportedOperation('Unsupported operation =')
+
     def _visit_binary_float_op(self, e, float32_name, float64_name):
         assert e.num_args() == 2
         self._check_fp_sort(e.arg(0))
@@ -153,6 +157,8 @@ class CoralPrinter(Util.Z3ExprDispatcher):
             raise CoralPrinterException('Unhandled binary float op case')
 
     def visit_float_eq(self, e):
+        # FIXME: Check that these are semantically equivalent. This is tricky
+        # because Coral is very poorly documented.
         self._visit_binary_float_op(e, 'FEQ', 'DEQ')
 
     def visit_float_leq(self, e):
