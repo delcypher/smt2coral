@@ -280,6 +280,9 @@ class CoralPrinter(Util.Z3ExprDispatcher):
     def visit_float_div(self, e):
         self._visit_binary_arith_op_with_rounding_mode(e, 'DIV')
 
+    def visit_float_fma(self, e):
+        raise CoralPrinterUnsupportedOperation('fp.fma')
+
     def visit_float_is_nan(self, e):
         arg = e.arg(0)
         self._check_fp_sort(arg)
