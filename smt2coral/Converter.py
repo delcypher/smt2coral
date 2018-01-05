@@ -292,6 +292,16 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         self.visit(e.arg(1))
         self.sio.write(')')
 
+    def visit_float_rem(self, e):
+        # FIXME: Check the semantics are correct here
+        assert e.num_args() == 2
+        self._check_fp_sort(e)
+        self.sio.write('MOD(')
+        self.visit(e.arg(0))
+        self.sio.write(',')
+        self.visit(e.arg(1))
+        self.sio.write(')')
+
     def visit_float_is_nan(self, e):
         arg = e.arg(0)
         self._check_fp_sort(arg)
