@@ -302,6 +302,15 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         self.visit(e.arg(1))
         self.sio.write(')')
 
+    def visit_float_round_to_integral(self ,e):
+        raise CoralPrinterUnsupportedOperation('fp.roundToIntegral')
+
+    def visit_float_min(self ,e):
+        raise CoralPrinterUnsupportedOperation('fp.min')
+
+    def visit_float_max(self ,e):
+        raise CoralPrinterUnsupportedOperation('fp.max')
+
     def visit_float_is_nan(self, e):
         arg = e.arg(0)
         self._check_fp_sort(arg)

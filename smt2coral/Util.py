@@ -85,6 +85,9 @@ class Z3ExprDispatcher:
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_FMA] = self.visit_float_fma
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_SQRT] = self.visit_float_sqrt
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_REM] = self.visit_float_rem
+        self._z3_app_dispatcher_map[z3.Z3_OP_FPA_ROUND_TO_INTEGRAL] = self.visit_float_round_to_integral
+        self._z3_app_dispatcher_map[z3.Z3_OP_FPA_MIN] = self.visit_float_min
+        self._z3_app_dispatcher_map[z3.Z3_OP_FPA_MAX] = self.visit_float_max
 
         # Float predicates
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_IS_NAN] = self.visit_float_is_nan
@@ -204,6 +207,19 @@ class Z3ExprDispatcher:
     def visit_float_rem(self, e):
         assert e.num_args() == 2
         self.default_handler(e)
+
+    def visit_float_round_to_integral(self ,e):
+        assert e.num_args() == 2
+        self.default_handler(e)
+
+    def visit_float_min(self ,e):
+        assert e.num_args() == 2
+        self.default_handler(e)
+
+    def visit_float_max(self ,e):
+        assert e.num_args() == 2
+        self.default_handler(e)
+
 
     def visit_float_is_nan(self, e):
         assert e.num_args() == 1
