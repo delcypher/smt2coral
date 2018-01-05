@@ -174,6 +174,25 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         else:
             raise CoralPrinterException('Unsupported sort: {}'.format(sort))
 
+    def visit_float_plus_zero(self, e):
+        assert e.num_args() == 0
+        self._check_fp_sort(e)
+        if self._is_float32_sort(e.sort()):
+            self.sio.write('FCONST(0.0)')
+        elif self._is_float64_sort(e.sort()):
+            self.sio.write('DCONST(0.0)')
+        else:
+            raise CoralPrinterException('Unhandled +zero')
+
+    def visit_float_minus_zero(self, e):
+        assert e.num_args() == 0
+        self._check_fp_sort(e)
+        if self._is_float32_sort(e.sort()):
+            self.sio.write('FCONST(-0.0)')
+        elif self._is_float64_sort(e.sort()):
+            self.sio.write('DCONST(-0.0)')
+        else:
+            raise CoralPrinterException('Unhandled +zero')
 
     def _visit_binary_float_op(self, e, float32_name, float64_name):
         assert e.num_args() == 2

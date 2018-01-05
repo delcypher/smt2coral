@@ -68,6 +68,10 @@ class Z3ExprDispatcher:
         # multi sort functions
         self._z3_app_dispatcher_map[z3.Z3_OP_EQ] = self.visit_eq
 
+        # Float constants
+        self._z3_app_dispatcher_map[z3.Z3_OP_FPA_PLUS_ZERO] = self.visit_float_plus_zero
+        self._z3_app_dispatcher_map[z3.Z3_OP_FPA_MINUS_ZERO] = self.visit_float_minus_zero
+
         # Float relations
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_EQ] = self.visit_float_eq
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_LE] = self.visit_float_leq
@@ -152,6 +156,14 @@ class Z3ExprDispatcher:
         assert e.num_args() == 2
         self.default_handler(e)
 
+    def visit_float_plus_zero(self, e):
+        assert e.num_args() == 0
+        self.default_handler(e)
+
+    def visit_float_minus_zero(self, e):
+        assert e.num_args() == 0
+        self.default_handler(e)
+
     def visit_float_eq(self, e):
         assert e.num_args() == 2
         self.default_handler(e)
@@ -219,7 +231,6 @@ class Z3ExprDispatcher:
     def visit_float_max(self ,e):
         assert e.num_args() == 2
         self.default_handler(e)
-
 
     def visit_float_is_nan(self, e):
         assert e.num_args() == 1
