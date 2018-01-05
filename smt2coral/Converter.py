@@ -271,6 +271,9 @@ class CoralPrinter(Util.Z3ExprDispatcher):
     def visit_float_add(self, e):
         self._visit_binary_arith_op_with_rounding_mode(e, 'ADD')
 
+    def visit_float_sub(self, e):
+        self._visit_binary_arith_op_with_rounding_mode(e, 'SUB')
+
     def visit_float_is_nan(self, e):
         arg = e.arg(0)
         self._check_fp_sort(arg)
