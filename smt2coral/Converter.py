@@ -283,6 +283,15 @@ class CoralPrinter(Util.Z3ExprDispatcher):
     def visit_float_fma(self, e):
         raise CoralPrinterUnsupportedOperation('fp.fma')
 
+    def visit_float_sqrt(self, e):
+        assert e.num_args() == 2
+        self._check_fp_sort(e)
+        rounding_mode = e.arg(0)
+        self._check_rounding_mode(rounding_mode)
+        self.sio.write('SQRT_(')
+        self.visit(e.arg(1))
+        self.sio.write(')')
+
     def visit_float_is_nan(self, e):
         arg = e.arg(0)
         self._check_fp_sort(arg)
