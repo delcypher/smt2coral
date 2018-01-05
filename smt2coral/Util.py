@@ -80,6 +80,7 @@ class Z3ExprDispatcher:
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_NEG] = self.visit_float_neg
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_ADD] = self.visit_float_add
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_SUB] = self.visit_float_sub
+        self._z3_app_dispatcher_map[z3.Z3_OP_FPA_MUL] = self.visit_float_mul
 
         # Float predicates
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_IS_NAN] = self.visit_float_is_nan
@@ -177,6 +178,10 @@ class Z3ExprDispatcher:
         self.default_handler(e)
 
     def visit_float_sub(self, e):
+        assert e.num_args() == 3
+        self.default_handler(e)
+
+    def visit_float_mul(self, e):
         assert e.num_args() == 3
         self.default_handler(e)
 
