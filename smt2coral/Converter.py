@@ -18,6 +18,10 @@ class CoralPrinterUnsupportedRoundingMode(CoralPrinterException):
     def __init__(self, rm):
         super().__init__('Unsupported rounding mode:{}'.format(rm))
 
+class CoralPrinterUnsupportedSort(CoralPrinterException):
+    def __init__(self, s):
+        super().__init__('Unsupported sort:{}'.format(s))
+
 class CoralPrinter(Util.Z3ExprDispatcher):
     def __init__(self):
         super().__init__()
@@ -226,6 +230,124 @@ class CoralPrinter(Util.Z3ExprDispatcher):
             self.sio.write('DCONST(NaN)')
         else:
             raise CoralPrinterException('Unhandled NaN')
+
+    def visit_float_constant(self, e):
+        assert e.num_args() == 3
+        self._check_fp_sort(e)
+
+        sign_bit = e.arg(0)
+        assert isinstance(sign_bit, z3.BitVecNumRef)
+        assert sign_bit.size() == 1
+        sign_bit_bn = sign_bit.as_long()
+
+        exp_bits = e.arg(1)
+        assert isinstance(exp_bits, z3.BitVecNumRef)
+        exp_bits_bn = exp_bits.as_long()
+
+        # Excludes implicit bit
+        significand_bits = e.arg(2)
+        assert isinstance(significand_bits, z3.BitVecNumRef)
+        significand_bits_bn = significand_bits.as_long()
+
+        # Try to emit a hexfloat
+
+        if exp_bits.size() == 8 and significand_bits.size() == 23:
+            # Float 32
+            self.sio.write('FCONST(')
+            if exp_bits_bn == 0xff:
+                # Infinity or NaN
+                if significand_bits_bn == 0:
+                    # Infinity
+                    if sign_bit_bn == 1:
+                        self.sio.write('-Infinity)')
+                    else:
+                        self.sio.write('Infinity)')
+                    return
+                else:
+                    # NaN
+                    self.sio.write('NaN)')
+                    return
+
+            # Normal or subnormal number
+            if sign_bit_bn == 1:
+                self.sio.write('-')
+
+            # Zero
+            if exp_bits_bn == 0 and significand_bits_bn == 0:
+                self.sio.write('0.0)')
+                return
+
+            self.sio.write('0x')
+            # Infer integer bit of signficand from exponent
+            is_subnormal_or_zero = (exp_bits_bn == 0)
+            if is_subnormal_or_zero:
+                self.sio.write('0.')
+            else:
+                self.sio.write('1.')
+
+            # Write out signficand out in hex
+            # NOTE: need 6 hex digits
+            significand_as_hex_str = "{0:06x}".format(significand_bits_bn)
+            assert len(significand_as_hex_str) == 6
+            self.sio.write(significand_as_hex_str)
+
+            # Now write out exponent
+            normalized_exponent = exp_bits_bn - 127
+            if normalized_exponent == -127:
+                # Subnormal
+                normalized_exponent = -126
+            self.sio.write('p{}'.format(normalized_exponent))
+            self.sio.write(')')
+        elif exp_bits.size() == 11 and significand_bits.size() == 52:
+            # Float 64
+            self.sio.write('DCONST(')
+            if exp_bits_bn == 0x7ff:
+                # Infinity or NaN
+                if significand_bits_bn == 0:
+                    # Infinity
+                    if sign_bit_bn == 1:
+                        self.sio.write('-Infinity)')
+                    else:
+                        self.sio.write('Infinity)')
+                    return
+                else:
+                    # NaN
+                    self.sio.write('NaN)')
+                    return
+
+            # Normal or subnormal number
+            if sign_bit_bn == 1:
+                self.sio.write('-')
+
+            # Zero
+            if exp_bits_bn == 0 and significand_bits_bn == 0:
+                self.sio.write('0.0)')
+                return
+
+            self.sio.write('0x')
+            # Infer integer bit of signficand from exponent
+            is_subnormal_or_zero = (exp_bits_bn == 0)
+            if is_subnormal_or_zero:
+                self.sio.write('0.')
+            else:
+                self.sio.write('1.')
+
+            # Write out signficand out in hex
+            # NOTE: need 13 hex digits
+            significand_as_hex_str = "{0:013x}".format(significand_bits_bn)
+            assert len(significand_as_hex_str) == 13
+            self.sio.write(significand_as_hex_str)
+
+            # Now write out exponent
+            normalized_exponent = exp_bits_bn - 1023
+            if normalized_exponent == -1023:
+                # Subnormal
+                normalized_exponent = -1022
+            self.sio.write('p{}'.format(normalized_exponent))
+            self.sio.write(')')
+        else:
+            raise CoralPrinterUnsupportedSort(e.sort())
+
 
     def _visit_binary_float_op(self, e, float32_name, float64_name):
         assert e.num_args() == 2

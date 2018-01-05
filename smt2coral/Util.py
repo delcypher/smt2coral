@@ -74,6 +74,7 @@ class Z3ExprDispatcher:
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_PLUS_INF] = self.visit_float_plus_inf
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_MINUS_INF] = self.visit_float_minus_inf
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_NAN] = self.visit_float_nan
+        self._z3_app_dispatcher_map[z3.Z3_OP_FPA_FP] = self.visit_float_constant
 
         # Float relations
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_EQ] = self.visit_float_eq
@@ -177,6 +178,10 @@ class Z3ExprDispatcher:
 
     def visit_float_nan(self, e):
         assert e.num_args() == 0
+        self.default_handler(e)
+
+    def visit_float_constant(self, e):
+        assert e.num_args() == 3
         self.default_handler(e)
 
     def visit_float_eq(self, e):
