@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-  Read SMT-LIBv2 query file and dump constraints
-  in Coral's native format.
+  Read SMT-LIBv2 query file and attempt to solve
+  them using the Coral constraint solver.
 """
 # vim: set sw=4 ts=4 softtabstop=4 expandtab:
 import argparse
