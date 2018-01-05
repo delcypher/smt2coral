@@ -11,8 +11,8 @@ class CoralPrinterException(Exception):
         self.msg = msg
 
 class CoralPrinterUnsupportedOperation(CoralPrinterException):
-    def __init__(self, msg):
-        self.msg = msg
+    def __init__(self, op):
+        super().__init__('Unsupported operation:{}'.format(op))
 
 class CoralPrinterUnsupportedRoundingMode(CoralPrinterException):
     def __init__(self, rm):
@@ -243,8 +243,8 @@ class CoralPrinter(Util.Z3ExprDispatcher):
             raise CoralPrinterException('Unhandled fneg op case')
 
     def visit_float_abs(self, e):
-        # FIXME: We need an ite expression to support this
-        raise CoralPrinterUnsupportedOperation('Unsupported operation fp.abs')
+        # FIXME: We need an ite expressions in coral to support this
+        raise CoralPrinterUnsupportedOperation('fp.abs')
 
     def _check_rounding_mode(self, rounding_mode):
         assert isinstance(rounding_mode, z3.FPRMRef)
