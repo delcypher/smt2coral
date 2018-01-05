@@ -14,6 +14,10 @@ class CoralPrinterUnsupportedOperation(CoralPrinterException):
     def __init__(self, msg):
         self.msg = msg
 
+class CoralPrinterUnsupportedRoundingMode(CoralPrinterException):
+    def __init__(self, rm):
+        super().__init__('Unsupported rounding mode:{}'.format(rm))
+
 class CoralPrinter(Util.Z3ExprDispatcher):
     def __init__(self):
         super().__init__()
@@ -241,6 +245,31 @@ class CoralPrinter(Util.Z3ExprDispatcher):
     def visit_float_abs(self, e):
         # FIXME: We need an ite expression to support this
         raise CoralPrinterUnsupportedOperation('Unsupported operation fp.abs')
+
+    def _check_rounding_mode(self, rounding_mode):
+        assert isinstance(rounding_mode, z3.FPRMRef)
+        kind = rounding_mode.decl().kind()
+        # FIXME: Verify this assumption. RNE is usually the default
+        # so Coral probably uses that...
+        if kind == z3.Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN:
+            return
+        raise CoralPrinterUnsupportedRoundingMode(rounding_mode.as_string())
+
+    def _visit_binary_arith_op_with_rounding_mode(self, e, op_name):
+        assert e.num_args() == 3
+        self._check_fp_sort(e)
+        rounding_mode = e.arg(0)
+        self._check_rounding_mode(rounding_mode)
+        lhs = e.arg(1)
+        rhs = e.arg(2)
+        self.sio.write(op_name + '(')
+        self.visit(lhs)
+        self.sio.write(',')
+        self.visit(rhs)
+        self.sio.write(')')
+
+    def visit_float_add(self, e):
+        self._visit_binary_arith_op_with_rounding_mode(e, 'ADD')
 
     def visit_float_is_nan(self, e):
         arg = e.arg(0)
