@@ -192,7 +192,29 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         elif self._is_float64_sort(e.sort()):
             self.sio.write('DCONST(-0.0)')
         else:
-            raise CoralPrinterException('Unhandled +zero')
+            raise CoralPrinterException('Unhandled -zero')
+
+    def visit_float_plus_inf(self, e):
+        assert e.num_args() == 0
+        self._check_fp_sort(e)
+        # Coral internally seems to use sun.msic.FloatingDecimal.readJavaFormatString()
+        if self._is_float32_sort(e.sort()):
+            self.sio.write('FCONST(Infinity)')
+        elif self._is_float64_sort(e.sort()):
+            self.sio.write('DCONST(Infinity)')
+        else:
+            raise CoralPrinterException('Unhandled +inf')
+
+    def visit_float_minus_inf(self, e):
+        assert e.num_args() == 0
+        self._check_fp_sort(e)
+        # Coral internally seems to use sun.msic.FloatingDecimal.readJavaFormatString()
+        if self._is_float32_sort(e.sort()):
+            self.sio.write('FCONST(-Infinity)')
+        elif self._is_float64_sort(e.sort()):
+            self.sio.write('DCONST(-Infinity)')
+        else:
+            raise CoralPrinterException('Unhandled +inf')
 
     def _visit_binary_float_op(self, e, float32_name, float64_name):
         assert e.num_args() == 2
