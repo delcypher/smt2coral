@@ -80,13 +80,11 @@ class CoralPrinter(Util.Z3ExprDispatcher):
 
     def _check_fp_sort(self, e):
         if not self._expr_is_supported_fp_sort(e):
-            raise CoralPrinterException(
-            'Unsupported floating point sort: {}'.format(e.sort()))
+            raise CoralPrinterUnsupportedSort(e.sort())
 
     def _check_bv_sort(self, e):
         if not self._expr_is_supported_bv_sort(e):
-            raise CoralPrinterException(
-            'Unsupported bitvector sort: {}'.format(e.sort()))
+            raise CoralPrinterUnsupportedSort(e.sort())
 
     def escape_variable_name(self, name):
         sym = None
@@ -119,9 +117,9 @@ class CoralPrinter(Util.Z3ExprDispatcher):
             elif self._is_float64_sort(sort):
                 self.sio.write('DVAR({})'.format(escaped_name))
             else:
-                raise CoralPrinterException('Unsupported sort')
+                raise CoralPrinterUnsupportedSort(sort)
         else:
-            raise CoralPrinterException('Unsupported sort: {}'.format(sort))
+            raise CoralPrinterUnsupportedSort(sort)
 
     def _visit_binary_op(self, e, name):
         assert e.num_args() == 2
@@ -176,7 +174,7 @@ class CoralPrinter(Util.Z3ExprDispatcher):
             )
             self.visit(new_expr)
         else:
-            raise CoralPrinterException('Unsupported sort: {}'.format(sort))
+            raise CoralPrinterUnsupportedSort(sort)
 
     def visit_float_plus_zero(self, e):
         assert e.num_args() == 0
