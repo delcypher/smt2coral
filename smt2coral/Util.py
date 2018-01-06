@@ -104,6 +104,7 @@ class Z3ExprDispatcher:
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_IS_INF] = self.visit_float_is_infinite
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_IS_NAN] = self.visit_float_is_nan
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_IS_NEGATIVE] = self.visit_float_is_negative
+        self._z3_app_dispatcher_map[z3.Z3_OP_FPA_IS_POSITIVE] = self.visit_float_is_positive
 
         # Float conversion operations
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_TO_FP] = self.visit_to_float
@@ -281,6 +282,10 @@ class Z3ExprDispatcher:
         self.default_handler(e)
 
     def visit_float_is_negative(self, e):
+        assert e.num_args() == 1
+        self.default_handler(e)
+
+    def visit_float_is_positive(self, e):
         assert e.num_args() == 1
         self.default_handler(e)
 
