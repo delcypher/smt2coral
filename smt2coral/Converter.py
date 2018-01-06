@@ -147,6 +147,12 @@ class CoralPrinter(Util.Z3ExprDispatcher):
     def visit_not(self, e):
         self._visit_unary_op(e, 'BNOT')
 
+    def visit_implies(self, e):
+        temp = z3.Or(
+            z3.Not(e.arg(0)),
+            e.arg(1))
+        self.visit(temp)
+
     def visit_eq(self, e):
         sort = e.arg(0).sort()
         if sort.kind() == z3.Z3_BOOL_SORT:
