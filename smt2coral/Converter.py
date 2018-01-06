@@ -135,11 +135,35 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         self.visit(e.arg(0))
         self.sio.write(')')
 
+    def _visit_bool_nary_op(self, e, name):
+        """
+            Visit boolean operator that has an n-ary form
+        """
+        assert e.num_args() > 0
+        if e.num_args() == 1:
+            # Apparently Z3 allows this, just ignore
+            # the operator and walk through it
+            self.visit(e.arg(0))
+        elif e.num_args() == 2:
+            self._visit_binary_op(e, name)
+        else:
+            # Repeatedly apply the binary operator
+            # to get the same semantics
+            num_args = e.num_args()
+            for index in range(0, num_args -1):
+                self.sio.write(name + '(')
+                self.visit(e.arg(index))
+                self.sio.write(',')
+                if index == num_args -2:
+                    self.visit(e.arg(index+1))
+            # Emit closing brackets
+            self.sio.write(')' * (num_args -1))
+
     def visit_and(self, e):
-        self._visit_binary_op(e, 'BAND')
+        self._visit_bool_nary_op(e, 'BAND')
 
     def visit_or(self, e):
-        self._visit_binary_op(e, 'BOR')
+        self._visit_bool_nary_op(e, 'BOR')
 
     def visit_xor(self, e):
         self._visit_binary_op(e, 'BXOR')
