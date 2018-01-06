@@ -514,6 +514,23 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         else:
             raise CoralPrinterException('Unhandled fneg op case')
 
+    def visit_float_is_negative(self, e):
+        arg = e.arg(0)
+        self._check_fp_sort(arg)
+        arg_sort = e.arg(0).sort()
+        zero = None
+        # FIXME: This isn't sound. We can't distinguish +0 and -0
+        # in Coral's constraint language
+        _logger.warning('Unsound conversion for fp.isNegative operation')
+        if self._is_float32_sort(arg_sort):
+            zero = z3.fpPlusZero(z3.Float32())
+        elif self._is_float64_sort(arg_sort):
+            zero = z3.fpPlusZero(z3.Float64())
+        else:
+            raise CoralPrinterException('Unhandled fneg op case')
+        tmp = z3.fpLT(arg, zero)
+        self.visit(tmp)
+
     def visit_float_is_zero(self, e):
         arg = e.arg(0)
         self._check_fp_sort(arg)
