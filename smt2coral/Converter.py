@@ -548,6 +548,56 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         tmp = z3.fpGT(arg, zero)
         self.visit(tmp)
 
+    def _get_smallest_positive_normal_for(self, sort):
+        if self._is_float32_sort(sort):
+            return z3.fpFP(
+                sgn=z3.BitVecVal(0, 1),
+                exp=z3.BitVecVal(0x1, 8),
+                sig=z3.BitVecVal(0x0, 23)
+            )
+        elif self._is_float64_sort(sort):
+            return z3.fpFP(
+                sgn=z3.BitVecVal(0, 1),
+                exp=z3.BitVecVal(0x1, 11),
+                sig=z3.BitVecVal(0x0, 52)
+            )
+        else:
+            raise CoralPrinterUnsupportedSort(sort)
+
+    def _get_largest_negative_normal_for(self, sort):
+        if self._is_float32_sort(sort):
+            return z3.fpFP(
+                sgn=z3.BitVecVal(1, 1),
+                exp=z3.BitVecVal(0x1, 8),
+                sig=z3.BitVecVal(0x0, 23)
+            )
+        elif self._is_float64_sort(sort):
+            return z3.fpFP(
+                sgn=z3.BitVecVal(1, 1),
+                exp=z3.BitVecVal(0x1, 11),
+                sig=z3.BitVecVal(0x0, 52)
+            )
+        else:
+            raise CoralPrinterUnsupportedSort(sort)
+
+    def visit_float_is_normal(self, e):
+        arg = e.arg(0)
+        self._check_fp_sort(arg)
+        arg_sort = e.arg(0).sort()
+        smallest_positive_normal = self._get_smallest_positive_normal_for(arg_sort)
+        largest_negative_normal = self._get_largest_negative_normal_for(arg_sort)
+        temp = z3.Or(
+            z3.And(
+                z3.fpGEQ(arg, smallest_positive_normal),
+                z3.fpLT(arg, z3.fpPlusInfinity(arg_sort))
+            ),
+            z3.And(
+                z3.fpLEQ(arg, largest_negative_normal),
+                z3.fpGT(arg, z3.fpMinusInfinity(arg_sort))
+            )
+        )
+        self.visit(temp)
+
     def visit_float_is_zero(self, e):
         arg = e.arg(0)
         self._check_fp_sort(arg)
