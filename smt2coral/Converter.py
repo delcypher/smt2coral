@@ -514,6 +514,24 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         else:
             raise CoralPrinterException('Unhandled fneg op case')
 
+    def visit_float_is_zero(self, e):
+        arg = e.arg(0)
+        self._check_fp_sort(arg)
+        arg_sort = arg.sort()
+        zero = None
+        # It doesn't matter if we pick +0 or -0 as we are using
+        # the fp.eq operator which can't distinguish them, so
+        # the choice of +0 is arbitrary.
+        if self._is_float32_sort(arg_sort):
+            zero = z3.fpPlusZero(z3.Float32())
+        elif self._is_float64_sort(arg_sort):
+            zero = z3.fpPlusZero(z3.Float64())
+        else:
+            raise CoralPrinterException('Unhandled fneg op case')
+        temp = z3.fpEQ(arg, zero)
+        self.visit(temp)
+
+
     def visit_to_float(self, e):
         to_sort = e.sort()
         if e.num_args() == 1:
