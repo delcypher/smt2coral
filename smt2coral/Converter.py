@@ -502,3 +502,16 @@ class CoralPrinter(Util.Z3ExprDispatcher):
             self.sio.write(')')
         else:
             raise CoralPrinterException('Unhandled fneg op case')
+
+    def visit_to_float(self, e):
+        to_sort = e.sort()
+        if e.num_args() == 1:
+            from_sort = e.arg(0).sort()
+        elif e.num_args() == 2:
+            # First arg is rounding mode
+            from_sort = e.arg(1).sort()
+        # FIXME: Coral does support conversion between "int" and "double"
+        # but doesn't seem to support anything else. For now just report
+        # that this isn't supported.
+        raise CoralPrinterUnsupportedOperation(
+            'Converting {} to {}'.format(from_sort, to_sort))

@@ -100,6 +100,9 @@ class Z3ExprDispatcher:
         # Float predicates
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_IS_NAN] = self.visit_float_is_nan
 
+        # Float conversion operations
+        self._z3_app_dispatcher_map[z3.Z3_OP_FPA_TO_FP] = self.visit_to_float
+
     def default_handler(self, e):
         msg = "No handler implemented for Z3 expr {}".format(
             e.sexpr())
@@ -254,4 +257,8 @@ class Z3ExprDispatcher:
 
     def visit_float_is_nan(self, e):
         assert e.num_args() == 1
+        self.default_handler(e)
+
+    def visit_to_float(self, e):
+        assert e.num_args() == 1 or e.num_args() == 2
         self.default_handler(e)
