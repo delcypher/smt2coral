@@ -598,6 +598,25 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         )
         self.visit(temp)
 
+    def visit_float_is_subnormal(self, e):
+        arg = e.arg(0)
+        self._check_fp_sort(arg)
+        arg_sort = e.arg(0).sort()
+        smallest_positive_normal = self._get_smallest_positive_normal_for(arg_sort)
+        largest_negative_normal = self._get_largest_negative_normal_for(arg_sort)
+        temp = z3.Or(
+            z3.And(
+                z3.fpLT(arg, smallest_positive_normal),
+                z3.fpGT(arg, z3.fpPlusZero(arg_sort))
+            ),
+            z3.And(
+                z3.fpGT(arg, largest_negative_normal),
+                z3.fpLT(arg, z3.fpMinusZero(arg_sort))
+            )
+        )
+        self.visit(temp)
+
+
     def visit_float_is_zero(self, e):
         arg = e.arg(0)
         self._check_fp_sort(arg)

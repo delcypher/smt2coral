@@ -101,6 +101,7 @@ class Z3ExprDispatcher:
 
         # Float predicates
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_IS_NORMAL] = self.visit_float_is_normal
+        self._z3_app_dispatcher_map[z3.Z3_OP_FPA_IS_SUBNORMAL] = self.visit_float_is_subnormal
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_IS_ZERO] = self.visit_float_is_zero
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_IS_INF] = self.visit_float_is_infinite
         self._z3_app_dispatcher_map[z3.Z3_OP_FPA_IS_NAN] = self.visit_float_is_nan
@@ -271,6 +272,10 @@ class Z3ExprDispatcher:
         self.default_handler(e)
 
     def visit_float_is_normal(self, e):
+        assert e.num_args() == 1
+        self.default_handler(e)
+
+    def visit_float_is_subnormal(self, e):
         assert e.num_args() == 1
         self.default_handler(e)
 
