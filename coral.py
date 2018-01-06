@@ -51,7 +51,12 @@ def main(args):
 
         # Do conversion from SMT-LIBv2 to Coral syntax
         printer = Converter.CoralPrinter()
-        constraints = printer.print_constraints(constraints)
+        try:
+            constraints = printer.print_constraints(constraints)
+        except Converter.CoralPrinterException as e:
+            _logger.error('{}: {}'.format(type(e).__name__, e))
+            pargs.output.write('unknown\n')
+            return 1
 
         # Invoke coral
         coral_jar = os.path.join(os.path.dirname(__file__), 'coral.jar')

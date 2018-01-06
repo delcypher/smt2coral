@@ -41,7 +41,12 @@ def main(args):
 
     # Do conversion and write
     printer = Converter.CoralPrinter()
-    pargs.output.write(printer.print_constraints(constraints))
+    try:
+        pargs.output.write(printer.print_constraints(constraints))
+    except Converter.CoralPrinterException as e:
+        _logger.error('{}: {}'.format(type(e).__name__, e))
+        return 1
+    pargs.output.write('\n')
     return 0
 
 if __name__ == '__main__':
