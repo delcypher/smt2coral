@@ -512,7 +512,7 @@ class CoralPrinter(Util.Z3ExprDispatcher):
             self.visit(arg)
             self.sio.write(')')
         else:
-            raise CoralPrinterException('Unhandled fneg op case')
+            raise CoralPrinterException('Unhandled fp.isNaN case')
 
     def visit_float_is_negative(self, e):
         arg = e.arg(0)
@@ -527,7 +527,7 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         elif self._is_float64_sort(arg_sort):
             zero = z3.fpPlusZero(z3.Float64())
         else:
-            raise CoralPrinterException('Unhandled fneg op case')
+            raise CoralPrinterException('Unhandled fp.isNegative case')
         tmp = z3.fpLT(arg, zero)
         self.visit(tmp)
 
@@ -544,7 +544,7 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         elif self._is_float64_sort(arg_sort):
             zero = z3.fpPlusZero(z3.Float64())
         else:
-            raise CoralPrinterException('Unhandled fneg op case')
+            raise CoralPrinterException('Unhandled fp.isZero op case')
         temp = z3.fpEQ(arg, zero)
         self.visit(temp)
 
@@ -561,7 +561,7 @@ class CoralPrinter(Util.Z3ExprDispatcher):
             pos_inf = z3.fpPlusInfinity(z3.Float64())
             neg_inf = z3.fpMinusInfinity(z3.Float64())
         else:
-            raise CoralPrinterException('Unhandled fneg op case')
+            raise CoralPrinterException('Unhandled fp.isInfinite op case')
         temp = z3.Or(
                 z3.fpEQ(arg, pos_inf),
                 z3.fpEQ(arg, neg_inf)
