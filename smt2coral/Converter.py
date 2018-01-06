@@ -531,6 +531,26 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         temp = z3.fpEQ(arg, zero)
         self.visit(temp)
 
+    def visit_float_is_infinite(self, e):
+        arg = e.arg(0)
+        self._check_fp_sort(arg)
+        arg_sort = arg.sort()
+        pos_inf = None
+        neg_inf = None
+        if self._is_float32_sort(arg_sort):
+            pos_inf = z3.fpPlusInfinity(z3.Float32())
+            neg_inf = z3.fpMinusInfinity(z3.Float32())
+        elif self._is_float64_sort(arg_sort):
+            pos_inf = z3.fpPlusInfinity(z3.Float64())
+            neg_inf = z3.fpMinusInfinity(z3.Float64())
+        else:
+            raise CoralPrinterException('Unhandled fneg op case')
+        temp = z3.Or(
+                z3.fpEQ(arg, pos_inf),
+                z3.fpEQ(arg, neg_inf)
+        )
+        self.visit(temp)
+
 
     def visit_to_float(self, e):
         to_sort = e.sort()
