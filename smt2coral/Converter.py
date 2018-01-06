@@ -176,6 +176,11 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         else:
             raise CoralPrinterUnsupportedSort(sort)
 
+    def visit_ite(self, e):
+        assert e.num_args() == 3
+        # FIXME: Coral doesn't seem to support this fundemental operation :(
+        raise CoralPrinterUnsupportedOperation('ite')
+
     def visit_float_plus_zero(self, e):
         assert e.num_args() == 0
         self._check_fp_sort(e)
