@@ -27,6 +27,14 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         super().__init__()
         self.sio = io.StringIO('')
         self.symbol_table = dict()
+        self._unsound_translation_occured = False
+
+    def translation_was_sound(self):
+        return not self._unsound_translation_occured
+
+    def _unsound_translation(self, op):
+        self._unsound_translation_occured = True
+        _logger.warning('Unsound translation for {} operation'.format(op))
 
     def print_constraints(self, constraints):
         assert isinstance(constraints, list)
@@ -42,6 +50,7 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         self.sio.close()
         self.sio = io.StringIO('')
         self.symbol_table = dict()
+        self._unsound_translation_occured = False
 
     def print_constraint(self, constraint):
         self.visit(constraint)
@@ -194,7 +203,7 @@ class CoralPrinter(Util.Z3ExprDispatcher):
             # FIXME: This isn't quite right because +zero is != to -zero
             # but we have no way in Coral's constraint language of distinguishing
             # between them
-            _logger.warning('Unsound conversion for = operation')
+            self._unsound_translation('=')
             new_expr = z3.Or(
                 z3.And(
                     z3.fpIsNaN(e.arg(0)),
@@ -433,7 +442,7 @@ class CoralPrinter(Util.Z3ExprDispatcher):
 
             FIXME: Can we do any better?
         """
-        _logger.warning('Unsound translation for fp.neg')
+        self._unsound_translation('fp.neg')
         assert e.num_args() == 1
         arg = e.arg(0)
         self._check_fp_sort(arg)
@@ -545,7 +554,7 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         zero = None
         # FIXME: This isn't sound. We can't distinguish +0 and -0
         # in Coral's constraint language
-        _logger.warning('Unsound conversion for fp.isNegative operation')
+        self._unsound_translation('fp.isNegative')
         if self._is_float32_sort(arg_sort):
             zero = z3.fpPlusZero(z3.Float32())
         elif self._is_float64_sort(arg_sort):
@@ -562,7 +571,7 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         zero = None
         # FIXME: This isn't sound. We can't distinguish +0 and -0
         # in Coral's constraint language
-        _logger.warning('Unsound conversion for fp.isPositve operation')
+        self._unsound_translation('fp.isPositive')
         if self._is_float32_sort(arg_sort):
             zero = z3.fpPlusZero(z3.Float32())
         elif self._is_float64_sort(arg_sort):

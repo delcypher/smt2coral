@@ -33,6 +33,7 @@ def loadYaml(openFile):
 
 def benchmark_can_be_converted(full_path):
     assert os.path.exists(full_path)
+    translation_was_sound = None
 
     # Parse using Z3
     with open(full_path, 'r') as f:
@@ -48,10 +49,11 @@ def benchmark_can_be_converted(full_path):
     printer = Converter.CoralPrinter()
     try:
         _ = printer.print_constraints(constraints)
+        translation_was_sound = printer.translation_was_sound()
     except Converter.CoralPrinterException as e:
         _logger.debug('{}: {}: {}'.format(full_path, type(e).__name__, e))
-        return False
-    return True
+        return (False, translation_was_sound)
+    return (True, translation_was_sound)
 
 def main(args):
     parser = argparse.ArgumentParser(description=__doc__)
@@ -76,6 +78,7 @@ def main(args):
     results = ii['results']
 
     benchmarks_can_be_converted = set()
+    benchmarks_with_sound_translation = set()
     benchmarks_cannot_be_converted = set()
     # Iterate over benchmarks
     for index, benchmark_info in enumerate(results):
@@ -84,13 +87,15 @@ def main(args):
         if not os.path.exists(full_path):
             _logger.error('Could not find benchmark "{}"'.format(full_path))
             return 1
-        can_convert = benchmark_can_be_converted(full_path)
+        can_convert, sound_translation = benchmark_can_be_converted(full_path)
         progress_str = '{} of {}'.format(index + 1, len(results))
         if can_convert:
             _logger.info('{}: Conversion successful ({})'.format(
                 benchmark,
                 progress_str))
             benchmarks_can_be_converted.add(benchmark)
+            if sound_translation:
+                benchmarks_with_sound_translation.add(benchmark)
         else:
             _logger.warning('{}: Conversion failed ({})'.format(
                 benchmark,
@@ -100,6 +105,8 @@ def main(args):
     # Report
     print("# of benchmarks can be converted: {}".format(
         len(benchmarks_can_be_converted)))
+    print("# of benchmarks that could be converted soundly: {}".format(
+        len(benchmarks_with_sound_translation)))
     print("# of benchmarks cannot be converted: {}".format(
         len(benchmarks_cannot_be_converted)))
         
