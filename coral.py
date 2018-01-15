@@ -1,9 +1,9 @@
 #!/usr/bin/env python
+# vim: set sw=4 ts=4 softtabstop=4 expandtab:
 """
   Read SMT-LIBv2 query file and attempt to solve
   them using the Coral constraint solver.
 """
-# vim: set sw=4 ts=4 softtabstop=4 expandtab:
 import argparse
 import os
 import pprint
@@ -29,6 +29,17 @@ def main(args):
         type=argparse.FileType('w'),
         default=sys.stdout,
     )
+    parser.add_argument("--seed",
+        help='Starting seed value',
+        type=int,
+        default=0,
+    )
+    parser.add_argument("--seed-iter",
+        dest='seed_iter',
+        help='Number of seeds to iterate through (default 1). -1 means unbounded.',
+        type=int,
+        default=1,
+    )
     parser.add_argument("--dump-output",
         dest='dump_output',
         default=False,
@@ -40,6 +51,9 @@ def main(args):
     pargs, unhandled_args = parser.parse_known_args(args)
     DriverUtil.handleLoggerArgs(pargs, parser)
 
+    if pargs.seed_iter < 1 and pargs.seed_iter != -1:
+        _logger.error('Invalid value for --seed-iter')
+        return 1
     try:
         # Parse using Z3
         constraint, err = Util.parse(pargs.query_file)
@@ -64,41 +78,64 @@ def main(args):
             _logger.error('Cannot find "{}"'.format(coral_jar))
             return 1
 
-        cmd_line = [
-            'java',
-            '-jar',
-            coral_jar
-        ]
-        # Add unhandled arguments
-        cmd_line.extend(unhandled_args)
+        starting_seed = pargs.seed
+        last_seed = starting_seed + pargs.seed_iter -1
 
-        # Now add the constraint
-        cmd_line.extend([
-            '--inputCONS',
-            constraints
-        ])
-
-        _logger.debug('Invoking: {}'.format(pprint.pformat(cmd_line)))
-
-        # Write stdout to tempfile so we can parse its output
-        with tempfile.TemporaryFile() as stdout:
-            proc = subprocess.Popen(args=cmd_line, stdout=stdout)
-            try:
-                exit_code = proc.wait()
-            except KeyboardInterrupt as e:
-                proc.kill()
-                raise e
-            response = parse_coral_output(stdout, pargs.dump_output)
-            if response is True:
-                pargs.output.write('sat\n')
-            elif response is False:
-                pargs.output.write('unsat\n')
-            else:
-                pargs.output.write('unknown\n')
+        seed = starting_seed
+        if pargs.seed_iter != 1:
+            _logger.debug('Using seed iteration mode')
+        response = None
+        while response is None:
+            exit_code, response = run_coral(
+                coral_jar,
+                constraints,
+                seed,
+                unhandled_args,
+                pargs
+            )
+            seed += 1
+            if seed > last_seed and pargs.seed_iter != -1:
+                break
+        if response is True:
+            pargs.output.write('sat\n')
+        elif response is False:
+            pargs.output.write('unsat\n')
+        else:
+            pargs.output.write('unknown\n')
         return exit_code
     except KeyboardInterrupt:
         pargs.output.write('unknown\n')
         return 1
+
+def run_coral(coral_jar, constraints, seed, unhandled_args, pargs):
+    assert isinstance(seed, int)
+    cmd_line = [
+        'java',
+        '-jar',
+        coral_jar
+    ]
+    # Add unhandled arguments
+    cmd_line.extend(unhandled_args)
+
+    # Now add the constraint and seed argument
+    cmd_line.extend([
+        '--inputCONS',
+        constraints,
+        '--seed={}'.format(seed),
+    ])
+
+    _logger.debug('Invoking: {}'.format(pprint.pformat(cmd_line)))
+
+    # Write stdout to tempfile so we can parse its output
+    with tempfile.TemporaryFile() as stdout:
+        proc = subprocess.Popen(args=cmd_line, stdout=stdout)
+        try:
+            exit_code = proc.wait()
+        except KeyboardInterrupt as e:
+            proc.kill()
+            raise e
+        response = parse_coral_output(stdout, pargs.dump_output)
+        return (exit_code, response)
 
 def parse_coral_output(stdout, dump_output):
     # Convert stdout to string
