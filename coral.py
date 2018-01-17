@@ -94,7 +94,7 @@ def main(args):
                 pargs
             )
             seed += 1
-            if seed > last_seed and pargs.seed_iter != -1:
+            if (seed > last_seed and pargs.seed_iter != -1) or exit_code != 0:
                 break
         if response is True:
             pargs.output.write('sat\n')
