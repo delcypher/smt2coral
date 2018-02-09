@@ -22,7 +22,7 @@ def main(args):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("query_file",
         nargs='?',
-        type=argparse.FileType('r'),
+        type=argparse.FileType('r', encoding='utf-8'),
         default=sys.stdin,
     )
     parser.add_argument("--output",
