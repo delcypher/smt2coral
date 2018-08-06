@@ -117,8 +117,8 @@ class CoralPrinter(Util.Z3ExprDispatcher):
             _logger.warning('Emitting BVAR, coral will likely crash on this')
             self.sio.write('BVAR({})'.format(escaped_name))
         elif sort.kind() == z3.Z3_BV_SORT:
-            self._check_bv_sort(e)
             raise NotImplementedError('BitVector variable')
+            self._check_bv_sort(e)
         elif sort.kind() == z3.Z3_FLOATING_POINT_SORT:
             self._check_fp_sort(e)
             if self._is_float32_sort(sort):
@@ -195,8 +195,9 @@ class CoralPrinter(Util.Z3ExprDispatcher):
             self.visit(e.arg(1))
             self.sio.write('))')
         elif sort.kind() == z3.Z3_BV_SORT:
-            self._check_bv_sort(e)
             raise NotImplementedError('BitVector equal')
+            self._check_bv_sort(e.arg(0))
+            self._check_bv_sort(e.arg(1))
         elif sort.kind() == z3.Z3_FLOATING_POINT_SORT:
             self._check_fp_sort(e.arg(0))
             # Either FEQ or both args are NaN
