@@ -7,6 +7,7 @@
 import argparse
 import logging
 import sys
+import traceback
 import z3
 from smt2coral import Converter
 from smt2coral import DriverUtil
@@ -45,6 +46,7 @@ def main(args):
         pargs.output.write(printer.print_constraints(constraints))
     except Converter.CoralPrinterException as e:
         _logger.error('{}: {}'.format(type(e).__name__, e))
+        _logger.debug(traceback.format_exc())
         return 1
     pargs.output.write('\n')
     return 0

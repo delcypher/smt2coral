@@ -11,6 +11,7 @@ import logging
 import subprocess
 import sys
 import tempfile
+import traceback
 import z3
 from smt2coral import Converter
 from smt2coral import DriverUtil
@@ -69,6 +70,7 @@ def main(args):
             constraints = printer.print_constraints(constraints)
         except Converter.CoralPrinterException as e:
             _logger.error('{}: {}'.format(type(e).__name__, e))
+            _logger.debug(traceback.format_exc())
             pargs.output.write('unknown\n')
             return 1
 
