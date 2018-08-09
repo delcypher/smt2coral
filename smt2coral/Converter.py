@@ -221,6 +221,31 @@ class CoralPrinter(Util.Z3ExprDispatcher):
         # FIXME: Coral doesn't seem to support this fundemental operation :(
         raise CoralPrinterUnsupportedOperation('ite')
 
+    def visit_distinct(self, e):
+        assert e.num_args() >= 2
+        # Construct a new expr that does an O(n^2) comparisons
+        exprs_to_and = []
+        for index_arg0 in range(0, e.num_args()):
+            for index_arg1 in range(0, e.num_args()):
+                if index_arg0 >= index_arg1:
+                    # Skip unnecessary comparisons
+                    continue
+                new_expr = z3.Not(
+                    e.arg(index_arg0) == e.arg(index_arg1)
+                )
+                exprs_to_and.append(new_expr)
+        # Special case a single comparision
+        if len(exprs_to_and) == 1:
+            self.visit(exprs_to_and[0])
+            return
+        # N > 1 comparisons
+        final_expr = z3.BoolVal(True)
+        while len(exprs_to_and) > 0:
+            e = exprs_to_and.pop()
+            final_expr = z3.And(final_expr, e)
+        self.visit(final_expr)
+
+
     def visit_float_plus_zero(self, e):
         assert e.num_args() == 0
         self._check_fp_sort(e)
